@@ -1,6 +1,7 @@
 import {startTransition, Suspense, use, useActionState, useState, useTransition} from "react";
 import {createUser, deleteUser, fetchUsers, User} from "../../shared/api.ts";
 import {ErrorBoundary} from "react-error-boundary";
+import {createUserAction} from "./actions.ts";
 
 // !! так теперь "если нет параметров" - "запрос на сервер" можно делать вмето "эффекта" + use():
 const defaultUsersPromise = fetchUsers();
@@ -36,48 +37,28 @@ export const UsersPage = () => {
 
 // "Обновление данных как на реакт 19" - 26 мин (https://www.youtube.com/watch?v=eAlYtiKQsV8) - принимаем функцию для рефетча
 const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
-  const [email, setEmail] = useState("");
-
-  const {} = useActionState();
+  // полная интеграция с неуправляемыми формами useActionState
+  const [state, dispatch, isPending] = useActionState(createUserAction({refetchUsers}), {});
 
   // лоадер на кнопке показывать при загрузке + "показывать старых юзеров до тех пор пока не создались новые" - такую проблему решают
   // "транзишены"
-  const [isPending, startTransition] = useTransition();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // отменяем перезагрузку стр.дейтвия браузера по умолчанию
-
-    // startTransition - тк "асинхронная и ДОЛГАЯ!!! операция" оборачиваем всегда в "transition"
-    startTransition(async () => {
-      await createUser({
-        id: crypto.randomUUID(),
-        email
-      });
-      // кнопка раздизеиблится уберется дефолтное значение только тогда когда в список "лишку" добавился новый элемент
-      // а добавился он тогда когда произошел post запрос потом get за юзерами - без РТК квери - не надо "тэги"
-      // startTransition - тк асинхронная и долгая операция оборачиваем всегда в "транзишн" === перезапрос, обновление данных
-      // после создания юзера запрашиваем данные только === "ревалидация данных"
-      // === post(создали юзера) + get(список новый юзеров)
-      refetchUsers();
-      setEmail(""); // в самом конце очищаем форму когда перезапросятся данные
-    });
-  };
 
   return (
-    <form className="flex gap-2" onSubmit={handleSubmit}>
+    <form className="flex gap-2" action={dispatch}>
       <input
+        // чтобы работала "неуправляемая форма" надо "name" указать обязательно
+        name="email"
         className="borser p-2 rounded bg-gray-100"
         type="email"
-        value={email}
         // когда идет запрос дизеиблим "инпут"
         disabled={isPending}
-        onChange={e => setEmail(e.target.value)}
       />
       <button
         disabled={isPending}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500">
         Add
       </button>
+      {state.error && <div className="text-red-500">{state.error}</div>}
     </form>
   );
 };
@@ -137,7 +118,7 @@ export const UserCard = ({user, refetchUsers}: { user: User, refetchUsers: () =>
 транзишн - когда "долгие" обновления(запрос данных, переходы м.у страницами, открытие модалки - юзеру не так важно чтобы это было быстро)
 реакт приоритизирует  - транзишены отображаются чуть позже чем  важные быстрые обновления типа что юзер ввел в инпут - увеличивает UX
 
-Главное: в транзишене можем делать асинхронныи запрос - если открытие модалки долгое то можем в процессе закрытия модалки сделать запрос
+"Главное": в "транзишене" можем делать асинхронныи запрос - если открытие модалки долгое то можем в процессе закрытия модалки сделать запрос
 на данные из этои модалки - после того как запрос прошел - открываем модалку...
 
 Правило: "ЕСЛИ НУЖНО ЧТО-ТО ДОЛГОЕ И АСИНХРОННОЕ - ВСЕГДА ОБОРАЧИВАЕМ В ТРАНЗИШН, сначала выполнит первоочередное короткое
@@ -151,4 +132,6 @@ export const UserCard = ({user, refetchUsers}: { user: User, refetchUsers: () =>
 - "Оптимистический апдейт" - когда имитируем что с интерфеисом все замечательно
 - ErrorBoundary (когда нет сети и сервак отвалился) - вокруг компонента обернем "UserLists" - когда нет сети
 вместо него текст покажем
+- у неуправляемых форм доступность лучше - "полная интеграция с неуправляемыми формами useActionState"
+Если форму можно сделать неуправляемои делать ее "неуправляемой"
  */
