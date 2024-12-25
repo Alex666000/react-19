@@ -10,7 +10,7 @@ export const UsersPage = () => {
   const refetchUsers = () => {
     // обновляем данные и они снова попадают в UsersList - делаем загрузку но ее "неевеитаем" а просто сетаем в промис
     // тут появляется новыи промис и он попадает в UsersList и снова активирует Suspense
-    setUsersPromise(fetchUsers());
+    setUsersPromise(fetchUsers()); // "ревалидация данных === после например post запроса - делаем get запрос"
   };
 
   return (
@@ -45,9 +45,9 @@ const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
       // а добавился он тогда когда произошел post запрос потом get за юзерами - без РТК квери - не надо "тэги"
       // startTransition - тк асинхронная и долгая операция оборачиваем всегда в "транзишн" === перезапрос, обновление данных
       startTransition(() => {
-        // после создания юзера запрашиваем данные только
+        // после создания юзера запрашиваем данные только === "ревалидация данных"
         refetchUsers();
-        setEmail("");
+        setEmail(""); // в самом конце очищаем форму когда перезапросятся данные
       });
     });
   };
@@ -58,6 +58,8 @@ const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
         className="borser p-2 rounded bg-gray-100"
         type="email"
         value={email}
+        // когда идет запрос дизеиблим "инпут"
+        disabled={isPending}
         onChange={e => setEmail(e.target.value)}
       />
       <button
