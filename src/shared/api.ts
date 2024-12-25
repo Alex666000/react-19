@@ -29,7 +29,7 @@ export const createUser = async (user: User): Promise<User> => {
 
 export const deleteUser = async (userId: string) => {
   try {
-    const res = await fetch(`http://localhost:3001/users${userId}`, {
+    const res = await fetch(`http://localhost:3001/users/${userId}`, {
       method: "DELETE",
     });
     if (!res.ok) throw new Error(`Failed with status ${res.status}`);
