@@ -1,7 +1,7 @@
 import {Suspense, use, useState, useTransition} from "react";
 import {createUser, fetchUsers, User} from "../../shared/api.ts";
 
-// !! так теперь "если нет параметров" - "запрос на сервер" можно делать:
+// !! так теперь "если нет параметров" - "запрос на сервер" можно делать вмето "эффекта" + use():
 const defaultUsersPromise = fetchUsers();
 
 export const UsersPage = () => {
