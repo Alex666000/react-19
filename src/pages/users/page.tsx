@@ -1,5 +1,6 @@
-import {startTransition, Suspense, use, useState, useTransition} from "react";
+import {startTransition, Suspense, use, useActionState, useState, useTransition} from "react";
 import {createUser, deleteUser, fetchUsers, User} from "../../shared/api.ts";
+import {ErrorBoundary} from "react-error-boundary";
 
 // !! так теперь "если нет параметров" - "запрос на сервер" можно делать вмето "эффекта" + use():
 const defaultUsersPromise = fetchUsers();
@@ -20,9 +21,15 @@ export const UsersPage = () => {
       <h1 className="text-3xl font-bold underline mb-10">Users</h1>
       {/* Форма создания юзера */}
       <CreateUserForm refetchUsers={refetchUsers}/>
-      <Suspense fallback={<div>Loading...</div>}>
-        <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
-      </Suspense>
+      <ErrorBoundary fallbackRender={(error) => (
+        <div className="text-red-500">
+          Something went wrong:{JSON.stringify(error)}
+        </div>
+      ) as any}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
+        </Suspense>
+      </ErrorBoundary>
     </main>
   );
 };
@@ -30,6 +37,8 @@ export const UsersPage = () => {
 // "Обновление данных как на реакт 19" - 26 мин (https://www.youtube.com/watch?v=eAlYtiKQsV8) - принимаем функцию для рефетча
 const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
   const [email, setEmail] = useState("");
+
+  const {} = useActionState();
 
   // лоадер на кнопке показывать при загрузке + "показывать старых юзеров до тех пор пока не создались новые" - такую проблему решают
   // "транзишены"
@@ -140,4 +149,6 @@ export const UserCard = ({user, refetchUsers}: { user: User, refetchUsers: () =>
 на сервере. Однако он может делать взаимодействие с приложением менее отзывчивым, так как пользователь видит
 изменения только после завершения запроса.
 - "Оптимистический апдейт" - когда имитируем что с интерфеисом все замечательно
+- ErrorBoundary (когда нет сети и сервак отвалился) - вокруг компонента обернем "UserLists" - когда нет сети
+вместо него текст покажем
  */
