@@ -8,9 +8,11 @@ export const UsersPage = () => {
   const [usersPromise, setUsersPromise] = useState(defaultUsersPromise);
 
   const refetchUsers = () => {
-    // обновляем данные и они снова попадают в UsersList - делаем загрузку но ее "неевеитаем" а просто сетаем в промис
-    // тут появляется новыи промис и он попадает в UsersList и снова активирует Suspense
-    setUsersPromise(fetchUsers()); // "ревалидация данных === после например post запроса - делаем get запрос"
+    // обновляем данные и они снова попадают в UsersList - делаем загрузку но ее "неэвейтим" а просто "сетаем" в промис
+    // тут появляется новыи промис и он попадает в UsersList и снова "активирует" Suspense
+
+    // "ревалидация данных === после например "post" запроса - делаем "get" запрос" и обновляем "UX"
+    setUsersPromise(fetchUsers());
   };
 
   return (
@@ -24,7 +26,7 @@ export const UsersPage = () => {
     </main>
   );
 };
-// Обновление данных как на реакт 19 - 26 мин - принимаем функцию для рефетча
+// "Обновление данных как на реакт 19" - 26 мин (https://www.youtube.com/watch?v=eAlYtiKQsV8) - принимаем функцию для рефетча
 const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
   const [email, setEmail] = useState("");
 
@@ -33,9 +35,9 @@ const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // отменяем перезагрузку стр.дейтвия браузера по умолчанию
 
-    // startTransition - тк асинхронная и долгая операция оборачиваем всегда в "transition"
+    // startTransition - тк "асинхронная и ДОЛГАЯ!!! операция" оборачиваем всегда в "transition"
     startTransition(async () => {
       await createUser({
         id: crypto.randomUUID(),
@@ -46,6 +48,7 @@ const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
       // startTransition - тк асинхронная и долгая операция оборачиваем всегда в "транзишн" === перезапрос, обновление данных
       startTransition(() => {
         // после создания юзера запрашиваем данные только === "ревалидация данных"
+        // === post(создали юзера) + get(список новый юзеров)
         refetchUsers();
         setEmail(""); // в самом конце очищаем форму когда перезапросятся данные
       });
@@ -72,7 +75,7 @@ const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
 };
 
 export const UsersList = ({usersPromise}: { usersPromise: Promise<User[]> }) => {
-  // use - прямо в рендере превратить наш Promise<User[]> в юзеров,
+  // "use" - прямо в рендере превратить наш Promise<User[]> в "юзеров",
   const users = use(usersPromise);
 
   return (
