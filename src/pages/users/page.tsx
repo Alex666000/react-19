@@ -2,18 +2,13 @@ import {startTransition, Suspense, use, useActionState, useState, useTransition}
 import {createUser, deleteUser, fetchUsers, User} from "../../shared/api.ts";
 import {ErrorBoundary} from "react-error-boundary";
 import {createUserAction, deleteUserAction} from "./actions.ts";
-
-// !! так теперь "если нет параметров" - "запрос на сервер" можно делать вмето "эффекта" + use():
-const defaultUsersPromise = fetchUsers();
+import {useUsers} from "./use-users.ts";
 
 export const UsersPage = () => {
-  const [usersPromise, setUsersPromise] = useState(defaultUsersPromise);
-
+  const [usersPromise, refetchUsers] = useUsers();
   // обновляем данные и они снова попадают в UsersList - делаем загрузку но ее "неэвейтим" а просто "сетаем" в промис
   // тут появляется новыи промис и он попадает в UsersList и снова "активирует" Suspense
 
-  // "ревалидация данных === после например "post" запроса - делаем "get" запрос" и обновляем "UX"
-  const refetchUsers = () => startTransition(() => setUsersPromise(fetchUsers())); /* startTransition(() - можно использ.и без хука - он возьмется из Реакта сам... */
 
   return (
     <main className="container mx-auto p-4 pt-10 flex flex-col gap-4">
