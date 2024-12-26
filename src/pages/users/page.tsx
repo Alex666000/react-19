@@ -1,7 +1,7 @@
 import {startTransition, Suspense, use, useActionState, useState, useTransition} from "react";
 import {createUser, deleteUser, fetchUsers, User} from "../../shared/api.ts";
 import {ErrorBoundary} from "react-error-boundary";
-import {createUserAction} from "./actions.ts";
+import {createUserAction, deleteUserAction} from "./actions.ts";
 
 // !! так теперь "если нет параметров" - "запрос на сервер" можно делать вмето "эффекта" + use():
 const defaultUsersPromise = fetchUsers();
@@ -36,7 +36,7 @@ export const UsersPage = () => {
 // "Обновление данных как на реакт 19" - 26 мин (https://www.youtube.com/watch?v=eAlYtiKQsV8) - принимаем функцию для рефетча
 const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
   // полная интеграция с неуправляемыми формами useActionState
-  const [state, dispatch, isPending] = useActionState(createUserAction({refetchUsers}), {email: ''}); // дефолтное значение инпута: email: ''
+  const [state, dispatch, isPending] = useActionState(createUserAction({refetchUsers}), {email: ""}); // дефолтное значение инпута: email: ''
 
   // лоадер на кнопке показывать при загрузке + "показывать старых юзеров до тех пор пока не создались новые" - такую проблему решают
   // "транзишены"
@@ -49,7 +49,7 @@ const CreateUserForm = ({refetchUsers}: { refetchUsers: () => void }) => {
         defaultValue={state.email} // для неуправляемой формы
         className="borser p-2 rounded bg-gray-100"
         type="email"
-        // когда идет запрос дизеиблим "инпут"
+        // когда идет запрос "дизеиблим" "инпут"
         disabled={isPending}
       />
       <button
@@ -82,29 +82,23 @@ export const UsersList = ({usersPromise, refetchUsers}: { usersPromise: Promise<
 };
 
 export const UserCard = ({user, refetchUsers}: { user: User, refetchUsers: () => void }) => {
-  const [isPending, startTransition] = useTransition();
+  // Чтобы useActionState работал с кнопкои удаления надо обернуть кнопку в форму
+  const [state, handleDelete, isPending] = useActionState(deleteUserAction({id: user.id, refetchUsers}), {}); // дефолтное значение инпута: email: ''
 
-  const handleDelete = async () => {
-    startTransition(async () => {
-      await deleteUser(user.id);
-      // удалили кнопку и список обновленный потом показывается: delete(user) + get(users)
-      // + disabled кнопку при запросе + loading не видим все быстрее работает на 19 версии(мигания лоадера
-      // на удалении нет!! Круто!!) === 'писимистик апдейт'
-      refetchUsers(); // вызываем на нашем родителе на UsersList
-    });
-  };
   return (
     <li className="border p-2 m-2 rounded bg-gray-100 flex gap-2">
       {user.email}
-      <button
-        disabled={isPending}
-        // по умолчанию стоит "сабмит" - чтобы не засабмитилась ставим button
-        type="button"
-        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-auto disabled:bg-gray-400"
-        onClick={handleDelete}
-      >
-        Delete
-      </button>
+      <form action={handleDelete} className="ml-auto">
+        <button
+          disabled={isPending}
+          // по умолчанию стоит "сабмит" - чтобы не засабмитилась ставим button
+          // type="button" // убрали тип тк отправляем форму
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-auto disabled:bg-gray-400"
+        >
+          Delete
+          {state.error && <div className="text-red-500">{state.error}</div>}
+        </button>
+      </form>
     </li>
   );
 };

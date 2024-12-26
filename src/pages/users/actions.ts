@@ -1,4 +1,4 @@
-import {createUser} from "../../shared/api.ts";
+import {createUser, deleteUser} from "../../shared/api.ts";
 
 // "инишлстейт"
 type CreateActionState = {
@@ -37,7 +37,7 @@ export const createUserAction = ({refetchUsers}: { refetchUsers: () => void }) =
 
       // если все "ок" (форма отправляется) - вернем состояние "экшена"
       return {
-        email: '' // зануляем текст инпута в случае успешной отправи формы (создания нового юзера)
+        email: "" // зануляем текст инпута в случае успешной отправи формы (создания нового юзера)
       };
     } catch (error) {
 // в случае ошибки "при отправке формы" - вернем:
@@ -48,6 +48,25 @@ export const createUserAction = ({refetchUsers}: { refetchUsers: () => void }) =
       };
     }
   };
+// -----------------------------------------------
+// "инишлстейт"
+type DeleteActionState = {
+  error?: string
+}
+
+export const deleteUserAction = ({refetchUsers, id}: { refetchUsers: () => void, id: string }) => async (): Promise<DeleteActionState> => {
+  try {
+    await deleteUser(id);
+    refetchUsers();
+
+    return {};
+  } catch { // в новом JS (error) - не обязателен
+    return {
+      error: 'Error on Deleting'
+    };
+  }
+
+};
 
 /*
 - Обработка ошибок + валидация формы

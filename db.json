@@ -204,10 +204,5 @@
       "title": "fas"
     }
   ],
-  "users": [
-    {
-      "id": "251e6166-0bef-4ebb-b0f9-d17a21fde18b",
-      "email": "admin@gmai1l.com"
-    }
-  ]
+  "users": []
 }
