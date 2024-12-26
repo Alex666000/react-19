@@ -6,9 +6,6 @@ import {useUsers} from "./use-users.ts";
 
 export const UsersPage = () => {
   const [usersPromise, refetchUsers] = useUsers();
-  // обновляем данные и они снова попадают в UsersList - делаем загрузку но ее "неэвейтим" а просто "сетаем" в промис
-  // тут появляется новыи промис и он попадает в UsersList и снова "активирует" Suspense
-
 
   return (
     <main className="container mx-auto p-4 pt-10 flex flex-col gap-4">
