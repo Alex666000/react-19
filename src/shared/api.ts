@@ -15,7 +15,7 @@ export const fetchUsers = async (): Promise<User[]> => {
 
 export const createUser = async (user: User): Promise<User> => {
   try {
-    // throw new Error('Error hm..') - генерируем ошибку
+    // throw new Error('Error hm..') - генерируем ошибку, чтобы проверить ErrorBoundary
     const res = await fetch("http://localhost:3001/users", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
