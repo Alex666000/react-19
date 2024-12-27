@@ -1,8 +1,9 @@
 import {Suspense, use, useActionState, useOptimistic, useRef} from "react";
-import {User} from "../../shared/api.ts";
+import {User} from "../../shared/users-api.ts";
 import {ErrorBoundary} from "react-error-boundary";
 import {CreateUserAction, DeleteUserAction} from "./actions.ts";
 import {useUsers} from "./use-users.ts";
+import {Link} from "react-router-dom";
 
 export const UsersPage = () => {
   const {useUsersList, createUserAction, deleteUserAction, usersPromise,} = useUsers();
@@ -35,16 +36,18 @@ const CreateUserForm = ({createUserAction}: { createUserAction: CreateUserAction
   // полная интеграция с неуправляемыми формами useActionState
   const [state, dispatch,] = useActionState(createUserAction, {email: ""}); // дефолтное значение инпута: email: ''
 
+  // "Оптимистик на локальку.."
   const [optimisticState, setOptimisticState] = useOptimistic(state);
 
-  const form = useRef<HTMLFormElement>(null);
+  const form = useRef(null);
 
   return (
     <form
       className="flex gap-2"
       ref={form}
+      // все что в "action" находится автоматически обернуто в "startTransition"
       action={(formData: FormData) => {
-        form.current?.reset()
+        form.current?.reset(); // очистили поле формы руками через "реф"
         setOptimisticState({email: ""});
         dispatch(formData);
       }}>
@@ -95,6 +98,12 @@ export function UserCard({user, deleteUserAction,}: { user: User; deleteUserActi
 
       <form className="ml-auto">
         <input type="hidden" name="id" value={user.id}/> {/* "hidden" - чтобы id передать в formData внутри deleteUserAction */}
+        <Link
+          to={`/${user.id}/tasks`}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-auto disabled:bg-gray-400"
+        >
+          Tasks
+        </Link>
         <button
           className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-auto disabled:bg-gray-400"
           // type="button" // убрали тип тк отправляем форму

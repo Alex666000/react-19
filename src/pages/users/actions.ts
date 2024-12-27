@@ -1,4 +1,4 @@
-import {createUser, deleteUser, User} from "../../shared/api.ts";
+import {createUser, deleteUser, User} from "../../shared/users-api.ts";
 import {use} from "react";
 
 // "инишлстейт"

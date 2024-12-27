@@ -1,5 +1,5 @@
 import {useState, startTransition, useOptimistic, use} from "react";
-import {fetchUsers, User} from "../../shared/api";
+import {fetchUsers, User} from "../../shared/users-api.ts";
 import {createUserAction, deleteUserAction} from "./actions.ts";
 
 // !! так теперь "если нет параметров" - "запрос на сервер" можно делать вмето "эффекта" + use():
@@ -13,6 +13,7 @@ export const useUsers = () => {
   // "ревалидация данных === после например "post" запроса - делаем "get" запрос" и обновляем "UX"
   const refetchUsers = () => startTransition(() => setUsersPromise(fetchUsers())); /* startTransition(() - можно использ.и без хука - он возьмется из Реакта сам... */
 
+  // "Оптимистик на список"
   const [createdUsers, optimisticCreate] = useOptimistic([] as User[], (createdUsers, user: User) => [...createdUsers, user]);
   const [deletedUsersIds, optimisticDelete] = useOptimistic([] as string[], (deletedUsers, id: string) => deletedUsers.concat(id));
 
